@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>টাইগার গ্যাং - লগিন</title>
+    
+    <!-- ফন্ট ও আইকন -->
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* --- কালার ও থিম --- */
+        :root {
+            --primary: #00b894;
+            --secondary: #0984e3;
+            --dark: #2d3436;
+            --bg: #dfe6e9;
+            --gradient-main: linear-gradient(135deg, #00b894 0%, #0984e3 100%);
+            --header-gradient: linear-gradient(to right, #2d3436, #000000);
+            --shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Hind Siliguri', sans-serif; -webkit-tap-highlight-color: transparent; }
+        
+        body { 
+            background-color: var(--bg); 
+            color: var(--dark); 
+            height: 100vh; 
+            overflow: hidden; /* স্ক্রল বন্ধ */
+            display: flex; flex-direction: column;
+        }
+
+        /* --- ১. লোডিং স্ক্রিন --- */
+        #loading-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #fff; z-index: 99999;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: opacity 0.6s ease;
+        }
+        .static-logo {
+            width: 140px; height: 140px; object-fit: contain;
+            margin-bottom: 30px; border-radius: 50%;
+        }
+        .progress-container {
+            width: 80%; height: 6px; background: #eee;
+            border-radius: 10px; overflow: hidden; position: relative;
+        }
+        .progress-bar {
+            width: 0%; height: 100%; background: #d63031;
+            animation: loadVideo 2.5s ease-in-out forwards;
+        }
+        @keyframes loadVideo { 0% { width: 0%; } 100% { width: 100%; } }
+        .brand-text {
+            margin-top: 20px; font-size: 1.2rem; font-weight: 700;
+            color: var(--dark); letter-spacing: 1px; text-transform: uppercase;
+        }
+
+        /* --- পেজ কনটেইনার --- */
+        .page { 
+            display: none; 
+            width: 100%; height: 100%; 
+            position: absolute; top: 0; left: 0;
+            overflow-y: auto;
+        }
+        
+        /* হোম পেজ (সেন্টার করা) */
+        #page-home {
+            display: flex; /* শুরুতে ফ্লেক্স থাকবে */
+            align-items: center; 
+            justify-content: center;
+            background: var(--bg);
+            z-index: 10;
+        }
+
+        /* --- লগিন বক্স (সিম্পল ডিজাইন) --- */
+        .login-box {
+            background: white; width: 90%; max-width: 400px;
+            padding: 50px 30px; border-radius: 25px;
+            box-shadow: var(--shadow); text-align: center;
+            animation: zoomIn 0.4s ease;
+        }
+        @keyframes zoomIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        .login-icon { 
+            font-size: 4.5rem; color: var(--primary); margin-bottom: 25px; 
+            background: #e0f2f1; width: 100px; height: 100px; line-height: 100px;
+            border-radius: 50%; margin-left: auto; margin-right: auto;
+        }
+        
+        .form-input {
+            width: 100%; padding: 18px; border: 2px solid #b2bec3; border-radius: 50px;
+            font-size: 1.1rem; text-align: center; letter-spacing: 1px; transition: 0.3s;
+            margin-bottom: 20px; background: #fdfdfd;
+        }
+        .form-input:focus { border-color: var(--primary); outline: none; background: #fff; box-shadow: 0 0 0 4px rgba(0, 184, 148, 0.1); }
+
+        .btn {
+            width: 100%; padding: 16px; border-radius: 50px; font-size: 1.2rem; font-weight: 700;
+            border: none; cursor: pointer; background: var(--gradient-main);
+            color: white; box-shadow: 0 10px 20px rgba(0, 184, 148, 0.3); transition: 0.2s;
+        }
+        .btn:active { transform: scale(0.95); }
+
+        /* --- পিন মোডাল --- */
+        #pin-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); z-index: 2000;
+            display: none; align-items: center; justify-content: center;
+            backdrop-filter: blur(8px);
+        }
+        .modal-content {
+            background: white; padding: 40px 30px; border-radius: 25px; width: 85%; max-width: 350px;
+            text-align: center; animation: slideUp 0.3s;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+        }
+        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        #inputPin {
+            font-size: 2.5rem; letter-spacing: 5px; font-weight: 900;
+            border: 2px solid var(--secondary); color: var(--dark);
+            height: 65px; border-radius: 15px; margin-bottom: 25px;
+            -webkit-text-security: disc;
+        }
+
+        /* --- আইডি কার্ড পেজ --- */
+        #page-card { 
+            background: #f1f2f6;
+            padding: 20px;
+            display: none; /* শুরুতে হাইড */
+        }
+        
+        /* কার্ড র‍্যাপার (সেন্টার করার জন্য) */
+        .card-wrapper {
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100%;
+        }
+
+        .id-card {
+            background: white; width: 100%; max-width: 380px;
+            border-radius: 25px; overflow: hidden; 
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            position: relative; border: 1px solid rgba(0,0,0,0.05);
+            display: flex; flex-direction: column;
+            min-height: 600px; /* ফিক্সড হাইট যাতে ফুটার নিচে থাকে */
+            animation: fadeIn 0.5s;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+
+        /* ১. লিডার ব্যাজ */
+        .leader-badge {
+            background: var(--header-gradient); color: #fab1a0;
+            padding: 18px; text-align: center; font-size: 0.95rem; font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        /* ২. প্রোফাইল */
+        .profile-sec {
+            text-align: center; padding: 30px 20px 20px;
+            background: radial-gradient(circle at top, #f1f2f6 0%, #ffffff 70%);
+            border-bottom: 1px dashed #dfe6e9;
+        }
+        .card-img {
+            width: 130px; height: 130px; border-radius: 50%; border: 5px solid white;
+            object-fit: cover; box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            margin-bottom: 15px;
+        }
+        .card-name { font-size: 1.6rem; font-weight: 800; color: var(--dark); line-height: 1.2; margin-bottom: 8px; }
+        .card-rank { 
+            display: inline-block; background: #e3f2fd; color: #0984e3; 
+            padding: 6px 18px; border-radius: 20px; font-size: 1rem; font-weight: 600;
+        }
+
+        /* ৩. ইনফো */
+        .info-container { 
+            padding: 25px; 
+            flex-grow: 1; /* বাকি জায়গা নিবে */
+            background: white;
+        }
+        .info-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 14px 0; border-bottom: 1px dashed #eee; font-size: 1rem;
+        }
+        .info-row:last-child { border-bottom: none; }
+        .info-label { color: #636e72; font-weight: 500; }
+        .info-val { font-weight: 700; color: var(--dark); }
+
+        /* ৪. ফুটার (ফিক্সড নিচে) */
+        .card-footer {
+            background: var(--gradient-main); 
+            color: white; 
+            text-align: center; 
+            padding: 20px 10px; 
+            margin-top: auto; /* ফ্লেক্সবক্স ট্রিক */
+        }
+        .footer-text {
+            font-size: 1.1rem; 
+            font-weight: 800; 
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        /* ব্যাক বাটন (লুকানো) */
+        .back-nav {
+            position: fixed; top: 20px; left: 20px; z-index: 200;
+            background: rgba(0,0,0,0.5); color: white; padding: 8px 15px;
+            border-radius: 20px; cursor: pointer; display: none; /* ডিফল্ট হাইড */
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- ১. লোডিং স্ক্রিন -->
+    <div id="loading-screen">
+        <img src="https://i.ibb.co.com/7JD280YV/1766496208611.png" class="static-logo">
+        <div class="progress-container"><div class="progress-bar"></div></div>
+        <div class="brand-text">কচুয়া চাঁদপুর টাইগার গ্যাং 🐯</div>
+    </div>
+
+    <!-- ২. হোম পেজ (শুধুমাত্র বক্স আর বাটন) -->
+    <div id="page-home" class="page">
+        <div class="login-box">
+            <div class="login-icon"><i class="fas fa-shield-alt"></i></div>
+            <h2 style="margin-bottom: 5px;">স্বাগতম</h2>
+            <p style="color:#666; margin-bottom: 30px;">আপনার মেম্বার আইডি দিন</p>
+            
+            <input type="number" id="inputId" class="form-input" placeholder="আইডি লিখুন...">
+            <button class="btn" onclick="checkID()">যাচাই করুন <i class="fas fa-arrow-right"></i></button>
+        </div>
+    </div>
+
+    <!-- ৩. পিন মোডাল -->
+    <div id="pin-modal">
+        <div class="modal-content">
+            <h3 style="margin-bottom: 25px; color: var(--dark);">গোপন পিন দিন</h3>
+            
+            <!-- পাসওয়ার্ড স্টাইল -->
+            <input type="password" id="inputPin" class="form-input" placeholder="••••••" 
+                   maxlength="6" inputmode="numeric"
+                   oninput="if(this.value.length > 6) this.value = this.value.slice(0, 6);">
+            
+            <button class="btn" onclick="verifyPin()">সাবমিট করুন</button>
+            <button onclick="closeModal()" style="margin-top: 20px; background: none; border: none; color: #d63031; cursor: pointer; font-weight: bold; font-size: 1rem;">বাতিল করুন</button>
+        </div>
+    </div>
+
+    <!-- ৪. আইডি কার্ড পেজ -->
+    <div id="page-card" class="page">
+        <!-- ব্যাক বাটন (উপরে বামে) -->
+        <div class="back-nav" onclick="goHome()"><i class="fas fa-arrow-left"></i> ব্যাক</div>
+
+        <div class="card-wrapper">
+            <div class="id-card">
+                <!-- লিডার -->
+                <div class="leader-badge">
+                    👑 লিডার: <span id="leaderName">লোডিং...</span>
+                </div>
+
+                <!-- প্রোফাইল -->
+                <div class="profile-sec">
+                    <img id="cardImg" class="card-img" src="">
+                    <h2 id="cardName" class="card-name"></h2>
+                    <div id="cardRank" class="card-rank"></div>
+                </div>
+
+                <!-- ইনফো -->
+                <div class="info-container">
+                    <div class="info-row">
+                        <span class="info-label">🆔 মেম্বার আইডি</span>
+                        <span id="cardID" class="info-val" style="color: #00b894; letter-spacing: 1px;"></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">📞 ফোন</span>
+                        <span id="cardPhone" class="info-val"></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">📧 ইমেইল</span>
+                        <span id="cardEmail" class="info-val" style="font-size: 0.9rem;"></span>
+                    </div>
+                </div>
+
+                <!-- ফুটার (ফিক্সড) -->
+                <div class="card-footer">
+                    <div class="footer-text">কচুয়া চাঁদপুর টাইগার গ্যাং 🐯</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, get, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        // Config
+        const firebaseConfig = {
+  apiKey: "AIzaSyCFZpoD3VsY6jUoLOyvPkvvgAi5G7FSrU8",
+  authDomain: "sahaporan-f803e.firebaseapp.com",
+  databaseURL: "https://sahaporan-f803e-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "sahaporan-f803e",
+  storageBucket: "sahaporan-f803e.firebasestorage.app",
+  messagingSenderId: "363059068068",
+  appId: "1:363059068068:web:26e29a831a437497d13a31"
+};
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // Global Setup
+        window.db = db; window.ref = ref; window.get = get; window.query = query; window.orderByChild = orderByChild; window.equalTo = equalTo;
+
+        window.onload = () => {
+            fetchLeaderName(); 
+            setTimeout(() => {
+                document.getElementById('loading-screen').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('loading-screen').style.display = 'none';
+                    // সরাসরি হোম পেজ শো হবে (Flex)
+                    document.getElementById('page-home').style.display = 'flex';
+                }, 600);
+            }, 2500);
+        };
+    </script>
+
+    <script>
+        let tempUser = null; 
+        let leaderNameGlobal = "নির্ধারিত নেই";
+
+        const roleData = {
+            "Convener": { name: "আহ্বায়ক (লিডার)", emoji: "👑" },
+            "JointConvener": { name: "যুগ্ন আহ্বায়ক", emoji: "⚔️" },
+            "Secretary": { name: "সেক্রেটারি", emoji: "✍️" },
+            "Member": { name: "সদস্য", emoji: "🛡️" }
+        };
+
+        // --- নেভিগেশন কন্ট্রোল ---
+        function showPage(pageId) {
+            // সব পেজ হাইড
+            document.querySelectorAll('.page').forEach(el => el.style.display = 'none');
+            
+            if(pageId === 'home') {
+                document.getElementById('page-home').style.display = 'flex';
+                // ইনপুট ক্লিয়ার হবে না, ইউজার এক্সপেরিয়েন্স ভালো থাকে
+                document.querySelector('.back-nav').style.display = 'none';
+            }
+            else if(pageId === 'card') {
+                document.getElementById('page-card').style.display = 'block';
+                document.querySelector('.back-nav').style.display = 'block';
+                // হিস্ট্রি পুশ
+                history.pushState({page: 'card'}, null, '');
+            }
+        }
+
+        window.goHome = function() {
+            showPage('home');
+        };
+
+        window.onpopstate = function(e) {
+            if(e.state && e.state.page === 'card') {
+                showPage('card');
+            } else {
+                showPage('home');
+                closeModal();
+            }
+        };
+
+        // --- লিডারের নাম ---
+        function fetchLeaderName() {
+            window.get(window.ref(window.db, 'users')).then(snap => {
+                if(snap.exists()) {
+                    const users = Object.values(snap.val());
+                    const leader = users.find(u => u.title === 'Convener');
+                    if(leader) { leaderNameGlobal = leader.name; }
+                }
+            });
+        }
+
+        // --- ১. আইডি চেক ---
+        window.checkID = function() {
+            const id = document.getElementById('inputId').value.trim();
+            if(!id) { alert('দয়া করে আইডি দিন'); return; }
+
+            const btn = document.querySelector('.btn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = 'খোঁজা হচ্ছে...';
+
+            // Safe search
+            window.get(window.ref(window.db, 'users')).then(snap => {
+                btn.innerHTML = originalText;
+                if(snap.exists()) {
+                    const users = Object.values(snap.val());
+                    const user = users.find(u => u.cid === id);
+
+                    if(user) {
+                        tempUser = user; 
+                        document.getElementById('pin-modal').style.display = 'flex';
+                        setTimeout(() => document.getElementById('inputPin').focus(), 100);
+                    } else {
+                        alert('❌ এই আইডির কোনো মেম্বার পাওয়া যায়নি!');
+                    }
+                } else {
+                    alert('❌ ডেটাবেস খালি!');
+                }
+            }).catch(e => {
+                alert('নেটওয়ার্ক সমস্যা!'); btn.innerHTML = originalText;
+            });
+        };
+
+        // --- ২. পিন যাচাই ---
+        window.verifyPin = function() {
+            const pin = document.getElementById('inputPin').value;
+            if(!pin || pin.length !== 6) { alert('৬ ডিজিটের সঠিক পিন দিন'); return; }
+
+            if(tempUser.pin === pin) {
+                showCard(tempUser);
+                closeModal();
+            } else {
+                alert('❌ পিন ভুল হয়েছে!');
+                document.getElementById('inputPin').value = '';
+            }
+        };
+
+        function closeModal() {
+            document.getElementById('pin-modal').style.display = 'none';
+            document.getElementById('inputPin').value = '';
+        }
+
+        // --- ৩. কার্ড প্রদর্শন ---
+        function showCard(user) {
+            const rInfo = roleData[user.title] || { name: user.title, emoji: "" };
+            
+            document.getElementById('leaderName').innerText = leaderNameGlobal;
+            document.getElementById('cardImg').src = user.image;
+            document.getElementById('cardName').innerText = user.name;
+            document.getElementById('cardRank').innerText = `${rInfo.emoji} ${rInfo.name}`;
+            
+            document.getElementById('cardID').innerText = user.cid;
+            document.getElementById('cardPhone').innerText = user.phone;
+            document.getElementById('cardEmail').innerText = user.email;
+
+            showPage('card');
+        }
+
+    </script>
+</body>
+</html>
